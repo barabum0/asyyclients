@@ -2,19 +2,21 @@
 ![Last Commit](https://img.shields.io/github/last-commit/barabum0/asyyclients?style=for-the-badge)
 [![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
 
-# YCLIENTS API 
-[![PyPI version](https://img.shields.io/pypi/v/yclients-api.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/yclients-api)
-[![Supported Python versions](https://img.shields.io/pypi/pyversions/yclients-api.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/yclients-api)
-[![Tests Passing](https://github.com/CoolmixZero/yclients-api-python/actions/workflows/python-package.yml/badge.svg)](https://github.com/CoolmixZero/yclients-api-python/actions)
-[![PyPI downloads](https://img.shields.io/pypi/dm/yclients-api.svg?style=flat-square)](https://pypi.org/project/yclients-api)
+# Asynchronous YCLIENTS API 
+[![PyPI version](https://img.shields.io/pypi/v/asyyclients.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/yclients-api)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/asyyclients.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/yclients-api)
 
-### **Python [YCLIENTS API WRAPPER](https://github.com/CoolmixZero/yclients-api-python/blob/main/yclients/yclients.py "Opens yclients.py") with [ujson](https://pypi.org/project/ujson/ "Opens ujson documentation") and [httpx](https://www.python-httpx.org/ "Opens httpx documentation") packages:**
-- PyPI page of project: https://pypi.org/project/yclients-api/
+[//]: # ([![Tests Passing]&#40;https://github.com/CoolmixZero/yclients-api-python/actions/workflows/python-package.yml/badge.svg&#41;]&#40;https://github.com/CoolmixZero/yclients-api-python/actions&#41;)
+[![PyPI downloads](https://img.shields.io/pypi/dm/asyyclients.svg?style=flat-square)](https://pypi.org/project/yclients-api)
+
+### **Python [Async YCLIENTS API WRAPPER](https://github.com/barabum0/asyyclients/blob/main/yclients/yclients.py "Opens yclients.py") with [ujson](https://pypi.org/project/ujson/ "Opens ujson documentation") and [httpx](https://www.python-httpx.org/ "Opens httpx documentation") packages:**
+- PyPI page of project: https://pypi.org/project/asyyclients/
 
 - The code changed `httpx ⟵ requests` and `ujson ⟵ json` packages.
   > `ujson` and `httpx` **faster** than `json` and `requests`
 
-- An example of using library also implemented in the [example.py](https://github.com/CoolmixZero/yclients-api-python/blob/main/example.py "Opens example.py").
+- An example of using library also implemented in the [example.py](https://github.com/barabum0/asyyclients/blob/main/example.py "Opens example.py").
+- This is an async implementation of [this project](https://github.com/CoolmixZero/yclients-api-python). Original author is Nikita Shalashkov
 
 > Please note that sending requests to get customer data can take time, especially if your database is quite large, since YCLIENTS API can return only 200 results at once. Also if sending one request takes more than a few seconds, you may need to connect to another Internet network.
 > 
@@ -27,15 +29,14 @@ ____
 ## Create API object
 
 ```python
-from asyyclients import YClientsAPI
+from asyyclients import AsyncYClientsAPI
 
 TOKEN = "your token"
 СID = 'your company id'
 FID = 'form id'
 
 async def main():
-    async with AsyncYClientsAPI(token=TOKEN, company_id=СID, form_id=FID) as api:
-        ...
+    api = AsyncYClientsAPI(token=TOKEN, company_id=СID, form_id=FID)
 ```
 ## Show debugging process
 ```python
