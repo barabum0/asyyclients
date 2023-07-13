@@ -1,5 +1,5 @@
 ![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
-![Last Commit](https://img.shields.io/github/last-commit/CoolmixZero/yclients-api-python?style=for-the-badge)
+![Last Commit](https://img.shields.io/github/last-commit/barabum0/asyyclients?style=for-the-badge)
 [![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
 
 # YCLIENTS API 
@@ -20,20 +20,22 @@
 > 
 # Installation:
 ```shell
-pip install yclients-api
+pip install asyyclients
 ```
 ____
 # Usage:
 ## Create API object
-```python
-from yclients import YClientsAPI
 
+```python
+from asyyclients import YClientsAPI
 
 TOKEN = "your token"
 СID = 'your company id'
 FID = 'form id'
 
-api = YClientsAPI(token=TOKEN, company_id=СID, form_id=FID)
+async def main():
+    async with AsyncYClientsAPI(token=TOKEN, company_id=СID, form_id=FID) as api:
+        ...
 ```
 ## Show debugging process
 ```python
@@ -43,7 +45,7 @@ api.show_debugging()
 - ### Get staff info
   > Returns list of staff for specific service and date
 ```python
-all_staff = api.get_staff()
+all_staff = await api.get_staff()
 print(all_staff)
 
 staff_id = all_staff['data'].get('id')
@@ -103,7 +105,7 @@ ____
 - ### Get services info
   > Returns list of services for specific staff and date
 ```python
-services = api.get_services(staff_id=staff_id)
+services = await api.get_services(staff_id=staff_id)
 print(services)
 
 service_id = services['data']['services'].get('id')
@@ -179,7 +181,7 @@ ____
 - ### Get booking dates
   > Returns all available days for specific staff and service
 ```python
-booking_days = api.get_available_days(staff_id=staff_id, service_id=service_id)
+booking_days = await api.get_available_days(staff_id=staff_id, service_id=service_id)
 print(booking_days)
 
 day = booking_days['data'].get('booking_dates')  # or .get('booking_days')
@@ -334,7 +336,7 @@ ____
 - ### Get booking times
   > Returns all available times slots on specific day staff and service
 ```python
-time_slots = api.get_available_times(staff_id=staff_id, service_id=service_id, day=day)
+time_slots = await api.get_available_times(staff_id=staff_id, service_id=service_id, day=day)
 print(time_slots)
 
 date_time = time_slots['data'].get('time')  # or .get('datetime')
@@ -385,14 +387,14 @@ ____
 
 - ### Book
 ```python
-booked, message = api.book(booking_id=0, 
-                           fullname='my name', 
-                           phone='53425345', 
-                           email='myemail@email.com, 
-                           service_id=service_id, 
-                           date_time=date_time, 
-                           staff_id=staff_id, 
-                           comment='some comment')
+booked, message = await api.book(booking_id=0, 
+                                 fullname='my name', 
+                                 phone='53425345', 
+                                 email='myemail@email.com, 
+                                 service_id=service_id, 
+                                 date_time=date_time, 
+                                 staff_id=staff_id, 
+                                 comment='some comment')
 ```
 
 ____
@@ -428,7 +430,7 @@ ____
 {
   "phone": "79000000000",
   "fullname": "ДИМА",
-  "email": "d@yclients.com",
+  "email": "d@asyyclients.com",
   "code": "38829",
   "comment": "тестовая запись!",
   "type": "mobile",
@@ -481,7 +483,7 @@ ____
 login = "example@gmail.com"
 password = "password"
 
-user_token = api.get_user_token(login, password)
+user_token = await api.get_user_token(login, password)
 ```
 
 ____
@@ -508,7 +510,7 @@ ____
 - ### Update autorisation parameters of the API class with USER TOKEN
   > After USER TOKEN was obtained you need to include it in header of requests that you are sending
 ```python
-api.update_user_token(user_token)
+await api.update_user_token(user_token)
 ```
 
 ____
@@ -532,7 +534,7 @@ ____
 
 - ### Shows USER permissions
 ```python
-api.show_user_permissions()
+await api.show_user_permissions()
 ```
 
 ____
@@ -792,7 +794,7 @@ ____
 - ### Get clients list
   > YCLIENTS API can't return all clients at once and returns in groups of **maximum size of 200**. Those groups are called pages and you can choose how many clients it will return
 ```python
-clients_data_list = api.get_clients_data()
+clients_data_list = await api.get_clients_data()
 ```
 
 ____
@@ -844,7 +846,7 @@ all_clients_ids = list(df['id'])
   > YCLIENTS API can't return all visits at once and returns in groups of **maximum size of 200**. Those groups are called pages and you can choose how many visits it will return
 ```python
 cid = 20419758
-client_visits = api.get_visits_for_client(cid)
+client_visits = await api.get_visits_for_client(cid)
 print(f'Client {cid} visits')
 print(f'{pd.DataFrame(client_visits)}')
 ```
@@ -1048,7 +1050,7 @@ ____
 
 - ### Show all visits for all clients
 ```python
-all_clients_visits = api.get_visits_data_for_clients_list(all_clients_ids)
+all_clients_visits = await api.get_visits_data_for_clients_list(all_clients_ids)
 for cid in all_clients_visits.keys():
     print(f'Client {cid} visits')
     print(f'{pd.DataFrame(all_clients_visits[cid])}')
@@ -1061,13 +1063,13 @@ for cid in all_clients_visits.keys():
   >>>>> -1 - the user did not come for a visit
 ```python
 cid = 20419758
-client_visits = api.get_attended_visits_for_client(cid)
+client_visits = await api.get_attended_visits_for_client(cid)
 print(f'Client {cid} attended visits')
 print(f'{pd.DataFrame(client_visits)}')
 ```
 - ### Show attended visits information for clients:
 ```python
-df = api.get_attended_visits_dates_information(all_clients_ids)
+df = await api.get_attended_visits_dates_information(all_clients_ids)
 print(f'Attended visits dataframe: {df}')
 ```
 - ### Show attended visits information for clients with at least one visit:
