@@ -6,7 +6,7 @@ import pandas as pd
 import ujson
 
 
-class YClientsAPI:
+class AsyncYClientsAPI:
 
     def __init__(self, token: str, company_id: int, form_id: int, language: str = 'ru-RU'):
         self.company_id = company_id
@@ -27,9 +27,9 @@ class YClientsAPI:
         dt = datetime.datetime.strptime(a, "%Y-%m-%dT%H:%M:%S")
         return dt
 
-    def book(self, booking_id: int, fullname: str, phone: str, email: str, staff_id: int,
-             date_time: str | datetime.datetime,
-             service_id: int = None, comment: str = None) -> (True, None) or (False, Exception):
+    async def book(self, booking_id: int, fullname: str, phone: str, email: str, staff_id: int,
+                   date_time: str | datetime.datetime,
+                   service_id: int = None, comment: str = None) -> (True, None) or (False, Exception):
         """ Make booking """
         url = "https://n{}.yclients.com/api/v1/book_record/{}/".format(self.form_id, self.company_id)
         payload = {
@@ -45,55 +45,62 @@ class YClientsAPI:
                 "datetime": date_time
             }]
         }
-        response = httpx.post(url, json=payload, headers=self.headers)
+        async with httpx.AsyncClient() as c:
+            response = await c.post(url, json=payload, headers=self.headers)
         res = ujson.loads(response.text)
         if isinstance(res, dict) and res.get('errors'):
             return False, res.get('errors', {}).get('message', '')
         return True, ''
 
-    def get_staff_info(self, staff_id: int) -> dict:
+    async def get_staff_info(self, staff_id: int) -> dict:
         """ Return dict with info about specific staff"""
         url = "https://n{}.yclients.com/api/v1/staff/{}/{}".format(self.form_id, self.company_id, staff_id)
-        response = httpx.get(url, headers=self.headers)
+        async with httpx.AsyncClient() as c:
+            response = await c.get(url, headers=self.headers)
         return ujson.loads(response.text)
 
-    def get_service_info(self, service_id: int) -> dict:
+    async def get_service_info(self, service_id: int) -> dict:
         """ Return dict with info about specific service"""
         url = "https://n{}.yclients.com/api/v1/services/{}/{}".format(self.form_id, self.company_id, service_id)
-        response = httpx.get(url, headers=self.headers)
+        async with httpx.AsyncClient() as c:
+            response = await c.get(url, headers=self.headers)
         return ujson.loads(response.text)
 
-    def get_staff(self, service_id: int = None, date_time=None) -> dict:
+    async def get_staff(self, service_id: int = None, date_time=None) -> dict:
         """ Return dict of staff for specific service and date"""
         url = "https://n{}.yclients.com/api/v1/book_staff/{}".format(self.form_id, self.company_id)
         querystring = {"service_ids[]": int(service_id)} if service_id else {}
         querystring.update({"datetime": date_time} if date_time else {})
-        response = httpx.get(url, headers=self.headers, params=querystring)
+        async with httpx.AsyncClient() as c:
+            response = await c.get(url, headers=self.headers, params=querystring)
         return ujson.loads(response.text)
 
-    def get_services(self, staff_id: int = None, date_time: int = None) -> dict:
+    async def get_services(self, staff_id: int = None, date_time: int = None) -> dict:
         """ Return list of services for specific staff and date"""
         url = "https://n{}.yclients.com/api/v1/book_services/{}".format(self.form_id, self.company_id)
         querystring = {"staff_id": int(staff_id)} if staff_id else {}
         querystring.update({"datetime": date_time} if date_time else {})
-        response = httpx.get(url, headers=self.headers, params=querystring)
+        async with httpx.AsyncClient() as c:
+            response = await c.get(url, headers=self.headers, params=querystring)
         return ujson.loads(response.text)
 
-    def get_available_days(self, staff_id: int = None, service_id: int = None) -> dict:
+    async def get_available_days(self, staff_id: int = None, service_id: int = None) -> dict:
         """ Return all available days for specific staff and service"""
         url = "https://n{}.yclients.com/api/v1/book_dates/{}".format(self.form_id, self.company_id)
         querystring = {"staff_id": int(staff_id)} if staff_id else {}
         querystring.update({"service_ids[]": service_id} if service_id else {})
-        response = httpx.get(url, headers=self.headers, params=querystring)
+        async with httpx.AsyncClient() as c:
+            response = await c.get(url, headers=self.headers, params=querystring)
         return ujson.loads(response.text)
 
-    def get_available_times(self, staff_id: int, service_id: int = None, day=None) -> dict:
+    async def get_available_times(self, staff_id: int, service_id: int = None, day=None) -> dict:
         """ Return all available time slots on specific day staff and service"""
         url = "https://n{}.yclients.com/api/v1/book_times/{}/{}/{}".format(self.form_id, self.company_id, staff_id, day)
         querystring = {}
         if service_id:
             querystring.update({"service_ids[]": service_id})
-        response = httpx.request("GET", url, headers=self.headers, params=querystring)
+        async with httpx.AsyncClient() as c:
+            response = await c.request("GET", url, headers=self.headers, params=querystring)
         return ujson.loads(response.text)
 
     """DEBUGGING"""
@@ -108,7 +115,7 @@ class YClientsAPI:
 
     """USER AUTHORIZATION"""
 
-    def get_user_token(self, login: str, password: str) -> str:
+    async def get_user_token(self, login: str, password: str) -> str:
         """
         To read clients data you need to obtain user token
         :param login: yclients user login
@@ -120,7 +127,8 @@ class YClientsAPI:
             "login": login,
             "password": password
         }
-        response = httpx.post(url, headers=self.headers, params=querystring)
+        async with httpx.AsyncClient() as c:
+            response = await c.post(url, headers=self.headers, params=querystring)
         user_token = ujson.loads(response.text)['data']['user_token']
         if self.__show_debugging:
             print(f"Obtained user token {user_token}")
@@ -139,13 +147,14 @@ class YClientsAPI:
             print(f"Updated autorisation parameters:"
                   f" {self.headers['Authorization']}")
 
-    def show_user_permissions(self):
+    async def show_user_permissions(self):
         """
         :return: json-type data with user permissions
         """
         url = f"https://api.yclients.com/api/v1/user/permissions/{self.company_id}"
         querystring = {}
-        response = httpx.request("GET", url, headers=self.headers, params=querystring)
+        async with httpx.AsyncClient() as c:
+            response = await c.request("GET", url, headers=self.headers, params=querystring)
         data = ujson.loads(response.text)['data']
         print("User permissions:")
         print(ujson.dumps(data, indent=4, sort_keys=True))
@@ -153,7 +162,7 @@ class YClientsAPI:
 
     """CLIENTS DATA"""
 
-    def __get_clients_page(self, page_number: int, session: httpx.Client, clients_per_page: int) -> dict:
+    async def __get_clients_page(self, page_number: int, session: httpx.AsyncClient, clients_per_page: int) -> dict:
         """
         Yclients api can't return all clients at once and returns in groups
          of maximum size of 200. Those groups are called pages and you can
@@ -168,12 +177,12 @@ class YClientsAPI:
         querystring = {}
         querystring.update({"count": clients_per_page})
         querystring.update({"page": page_number})
-        response = session.get(url, headers=self.headers, params=querystring)
+        response = await session.get(url, headers=self.headers, params=querystring)
         if self.__show_debugging:
             print(f'Clients page {page_number} obtained in {time.time() - st} sec')
         return ujson.loads(response.text)
 
-    def get_clients_data(self, clients_per_page: int = 200) -> dict:
+    async def get_clients_data(self, clients_per_page: int = 200) -> dict:
         """
         :param clients_per_page: size of the page
         :return: data of all the clients in the system
@@ -184,29 +193,28 @@ class YClientsAPI:
                'paid', 'balance', 'importance_id', 'importance',
                 'categories', 'last_change_date', 'custom_fields'
         """
-        session = httpx.Client(trust_env=False)
+        async with httpx.AsyncClient(trust_env=False) as session:
+            # In the first request we obtain total number of clients in system
+            first_request = await self.__get_clients_page(1, session, clients_per_page)
+            clients_data_list = first_request['data']
 
-        # In the first request we obtain total number of clients in system
-        first_request = self.__get_clients_page(1, session, clients_per_page)
-        clients_data_list = first_request['data']
+            # total number of clients
+            clients_number = first_request['meta']['total_count']
 
-        # total number of clients
-        clients_number = first_request['meta']['total_count']
+            # number of pages that we need to request
+            pages_number = int(clients_number / clients_per_page) + 1
+            if self.__show_debugging:
+                print(f"There are {clients_number} clients in the system")
+                if pages_number > 1:
+                    print(f"{pages_number} pages will be loaded")
 
-        # number of pages that we need to request
-        pages_number = int(clients_number / clients_per_page) + 1
-        if self.__show_debugging:
-            print(f"There are {clients_number} clients in the system")
-            if pages_number > 1:
-                print(f"{pages_number} pages will be loaded")
+            if pages_number == 1:
+                return clients_data_list
 
-        if pages_number == 1:
+            for page in range(2, pages_number + 1):
+                new_page_request = await self.__get_clients_page(page, session, clients_per_page)
+                clients_data_list.extend(new_page_request['data'])
             return clients_data_list
-
-        for page in range(2, pages_number + 1):
-            new_page_request = self.__get_clients_page(page, session, clients_per_page)
-            clients_data_list.extend(new_page_request['data'])
-        return clients_data_list
 
     def parse_clients_data(self, clients_data_list: list) -> pd.DataFrame:
         """
@@ -224,7 +232,7 @@ class YClientsAPI:
 
     """VISITS DATA"""
 
-    def __get_visits_page(self, cid: int, page_number: int, session: httpx.Client, visits_per_page: int) -> dict:
+    async def __get_visits_page(self, cid: int, page_number: int, session: httpx.AsyncClient, visits_per_page: int) -> dict:
         """
         Yclients api can't return all visits at once and returns in groups
          of maximum size of 200. Those groups are called pages and you can
@@ -241,13 +249,13 @@ class YClientsAPI:
             "count": visits_per_page,
             "page": page_number
         }
-        response = session.get(url, headers=self.headers, params=querystring)
+        response = await session.get(url, headers=self.headers, params=querystring)
         if self.__show_debugging:
             print(f'Visits page {page_number} obtained in {time.time() - st} sec')
 
         return ujson.loads(response.text)
 
-    def get_visits_for_client(self, cid: int, visits_per_page: int = 200, session: httpx.Client = None) -> list:
+    async def get_visits_for_client(self, cid: int, visits_per_page: int = 200, session: httpx.AsyncClient = None) -> list:
         """
         :param cid: client id
         :param visits_per_page: size of the page
@@ -284,49 +292,51 @@ class YClientsAPI:
             https://github.com/petroff/api-blueprint/blob/master/apiary.apib
         """
         if not session:
-            session = httpx.Client(trust_env=False)
+            session = httpx.AsyncClient(trust_env=False)
 
-        # In the first request we obtain total number of client visits in system
-        first_request = self.__get_visits_page(cid=cid,
-                                               page_number=1,
-                                               session=session,
-                                               visits_per_page=visits_per_page)
-        visits_data_list = first_request['data']
-        # total number of visits
-        visits_number = first_request['meta']['total_count']
-        # number of pages that we need to request
-        pages_number = int(visits_number / visits_per_page) + 1
-        if self.__show_debugging:
-            print(f"There are {visits_number} visits for clients {cid} in the system")
-            if pages_number > 1:
-                print(f"{pages_number} pages will be loaded")
+        with session:
 
-        if pages_number == 1:
+            # In the first request we obtain total number of client visits in system
+            first_request = await self.__get_visits_page(cid=cid,
+                                                   page_number=1,
+                                                   session=session,
+                                                   visits_per_page=visits_per_page)
+            visits_data_list = first_request['data']
+            # total number of visits
+            visits_number = first_request['meta']['total_count']
+            # number of pages that we need to request
+            pages_number = int(visits_number / visits_per_page) + 1
+            if self.__show_debugging:
+                print(f"There are {visits_number} visits for clients {cid} in the system")
+                if pages_number > 1:
+                    print(f"{pages_number} pages will be loaded")
+
+            if pages_number == 1:
+                return visits_data_list
+
+            for page in range(2, pages_number + 1):
+                new_page_request = await self.__get_visits_page(cid=cid,
+                                                          page_number=page,
+                                                          session=session,
+                                                          visits_per_page=visits_per_page)
+                visits_data_list.extend(new_page_request['data'])
             return visits_data_list
 
-        for page in range(2, pages_number + 1):
-            new_page_request = self.__get_visits_page(cid=cid,
-                                                      page_number=page,
-                                                      session=session,
-                                                      visits_per_page=visits_per_page)
-            visits_data_list.extend(new_page_request['data'])
-        return visits_data_list
-
-    def get_visits_data_for_clients_list(self, cids_list: list, visits_per_page=200) -> dict:
+    async def get_visits_data_for_clients_list(self, cids_list: list, visits_per_page=200) -> dict:
         """
         get_visits_for_client funtion wrapper for multiple clients
         :param cids_list: list of clients ids
         :param visits_per_page: size of the page
         :return: dictionary with client id as key and list of visits as value
         """
-        session = httpx.Client(trust_env=False)
+        session = httpx.AsyncClient(trust_env=False)
 
-        clients_visits_dictionary = {cid: self.get_visits_for_client(cid, visits_per_page, session)
+        clients_visits_dictionary = {cid: await self.get_visits_for_client(cid, visits_per_page, session)
                                      for cid in cids_list}
         return clients_visits_dictionary
 
-    def get_attended_visits_for_client(self, cid: int, visits_per_page: int = 200,
-                                       session: httpx.Client = None) -> list:
+    async def get_attended_visits_for_client(self, cid: int, visits_per_page: int = 200,
+                                       session: httpx.AsyncClient = None) -> list:
         """
         Attendance explanation from Yclient API:
             2 - The user has confirmed the entry,
@@ -339,15 +349,15 @@ class YClientsAPI:
             we want to use the same session for all of them
         :return: data of all the visits of client cid where attendance field is equal to 1
         """
-        all_visits = self.get_visits_for_client(cid=cid,
+        all_visits = await self.get_visits_for_client(cid=cid,
                                                 visits_per_page=visits_per_page,
                                                 session=session)
         attended_visits = [visit for visit in all_visits if visit['attendance'] == 1]
 
         return attended_visits
 
-    def get_attended_visits_dates_information(self, cids_lists: list, visits_per_page: int = 200,
-                                              session: httpx.Client = None) -> pd.DataFrame:
+    async def get_attended_visits_dates_information(self, cids_lists: list, visits_per_page: int = 200,
+                                              session: httpx.AsyncClient = None) -> pd.DataFrame:
         """
         :param cids_lists: clients ids list
         :param visits_per_page: size of the page
@@ -363,10 +373,10 @@ class YClientsAPI:
         df = pd.DataFrame(columns=columns)
         for cid in cids_lists:
             c_dict = {'id': cid}
-            attended_visits = self.get_attended_visits_for_client(cid=cid,
-                                                                  visits_per_page=visits_per_page,
-                                                                  session=session
-                                                                  )
+            attended_visits = await self.get_attended_visits_for_client(cid=cid,
+                                                                        visits_per_page=visits_per_page,
+                                                                        session=session
+                                                                        )
             visit_dates = [visit['datetime'] for visit in attended_visits]
 
             if not visit_dates:
