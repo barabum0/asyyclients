@@ -3,11 +3,11 @@
 [![Licence](https://img.shields.io/github/license/Ileriayo/markdown-badges?style=for-the-badge)](./LICENSE)
 
 # Asynchronous YCLIENTS API 
-[![PyPI version](https://img.shields.io/pypi/v/asyyclients.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/yclients-api)
-[![Supported Python versions](https://img.shields.io/pypi/pyversions/asyyclients.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/yclients-api)
+[![PyPI version](https://img.shields.io/pypi/v/asyyclients.svg?logo=pypi&logoColor=FFE873)](https://pypi.org/project/asyyclients)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/asyyclients.svg?logo=python&logoColor=FFE873)](https://pypi.org/project/asyyclients)
 
 [//]: # ([![Tests Passing]&#40;https://github.com/CoolmixZero/yclients-api-python/actions/workflows/python-package.yml/badge.svg&#41;]&#40;https://github.com/CoolmixZero/yclients-api-python/actions&#41;)
-[![PyPI downloads](https://img.shields.io/pypi/dm/asyyclients.svg?style=flat-square)](https://pypi.org/project/yclients-api)
+[![PyPI downloads](https://img.shields.io/pypi/dm/asyyclients.svg?style=flat-square)](https://pypi.org/project/asyyclients)
 
 ### **Python [Async YCLIENTS API WRAPPER](https://github.com/barabum0/asyyclients/blob/main/yclients/yclients.py "Opens yclients.py") with [ujson](https://pypi.org/project/ujson/ "Opens ujson documentation") and [httpx](https://www.python-httpx.org/ "Opens httpx documentation") packages:**
 - PyPI page of project: https://pypi.org/project/asyyclients/
